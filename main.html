@@ -1,0 +1,145 @@
+<html>
+  <body></body>
+  <script>
+    var m = [
+      [1, 1, 0],
+      [1, 1, 1],
+      [1, 0, 1]
+    ];
+
+    printMatr(m);
+
+    console.log('---------');
+    var x = maxRow(m);
+    console.log(x);
+    // printMatr(x);
+
+    // Algo start
+    // 1. Find column with min amount of 1's
+    var colToRemove = minCol(m);
+
+    // 2. Choose rows, that cover the column from step 1.
+    var rowsToCheck = rowsThatCoverCol(colToRemove);
+
+    // 3. Check which row from previous step has the most coverage among the initial matrix
+    var rowNum = rowToRemove(rowsToCheck);
+
+    // 4. Find columns that cover the row from the previous step.
+    // Check where this row has 1's, remove columns on these indexes
+    var cols = colsThatCoverRow(rowNum);
+
+    // 5. Remove these columns
+    for (var i = 0; i < cols.length; i++) {
+      
+    }
+
+    // Algo end
+
+    // Helper functions
+
+    function colsThatCoverRow(rowNum) {
+      var cols = [];
+      m[rowNum]
+      for (var i = 0; i < m[rowNum].length; i++) {
+        if (m[i]) {
+          cols.push(i);
+        }
+      }
+
+      return cols;
+    }
+
+    function rowToRemove(rows) {
+      var rowToRemove;
+      var maxSum = 0;
+      var currSum = 0;
+      for (var i = 0; i < rows.length; i++) {
+        currSum = m[rows[i]].reduce((a, b) => a + b, 0);
+        if (currSum >= maxSum) {
+          maxSum = currSum;
+          rowToRemove = rows[i];
+        }
+      }
+
+      return rowToRemove;
+    }
+
+    function rowsThatCoverCol(col) {
+      var a = [];
+      for (var i = 0; i < m.length; i++) {
+        if (m[i][col]) {
+          a.push(i);
+        }
+      }
+
+      return a;
+    }
+
+    function removeCol(array, remIdx) {
+      return array.map(function(arr) {
+        return arr.filter(function(el,idx){return idx !== remIdx});  
+      });
+    };
+
+    function removeRow(arr, row) {
+       arr = arr.slice(0); // make copy
+       arr.splice(row,1)
+       return arr;
+    };
+
+    function minCol(matr) {
+      // Find colum with min amout of 1s
+      // minSum has to be something other than 0
+      // in the beginning
+      var minColSum = matr.length;
+      var colSum;
+      var colNum;
+      for (var col = 0; col < matr[0].length; col++) {
+        colSum = 0;
+        for (var row = 0; row < matr.length; row++) {
+          colSum += matr[row][col];
+        }
+
+        if (colSum <= minColSum) {
+          minColSum = colSum;
+          colNum = col;
+        }
+      }
+
+      return colNum;
+    }
+
+    function maxRow(matr) {
+      // // Find row with max amount of 1s
+      var maxRowSum = 0;
+      var currRowSum = 0;
+      var rowNum = 0;
+      for (var i = 0; i < matr.length; i++) {
+        currRowSum = 0;
+        for (var j = 0; j < matr[0].length; j++) {
+          currRowSum += matr[i][j];
+
+          if (currRowSum > maxRowSum) {
+            rowNum = i;
+            maxRowSum = currRowSum;
+          }
+        }
+      }
+
+      return rowNum;
+    }
+
+    function printMatr(matr) {
+      var printText = '';
+
+      for (var i = 0; i < matr.length; i++) {
+        for (var j = 0; j < matr[0].length; j++) {
+          printText += matr[i][j] + ' ';
+        }
+        console.log(printText);
+        printText = '';
+      }
+    }
+  </script> 
+</html>
+ 

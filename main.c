@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #define ROWS 3
 #define COLS 3
@@ -38,31 +39,60 @@ int main(int argv, char *argc[]) {
   int H = 3;
   int W = 3;
   int test2[3][3] = {
-    {1,0,0},
+    {1,1,0},
     {1,0,1},
     {1,1,1}
   };
 
-  int colToRemove = minCol(test2);
-  printf("%d\n", colToRemove);
-  int maxRoww = maxRow(test2);
-  printf("%d\n", maxRoww);
+  // Algo steps
+  // 1. Find column with minumum amount of 1's
+  int colToRemove = 1; //minCol(test2);
 
-  // int newW = W - 1;
-  // int test3[H][newW] = 
-  // removeMatrRow(test2, 1);
+  // 2. Find which rows were covered by this column
+  // (at which index this column has 1's)
 
-  // TODO:
-  // 1. minCol and maxRow and removeMatrRow seem to work
-  // 2. write removeMatrCol
-  // 3. Check which row of the removed column contains 1's
-  // These rows should be removed from initial matrix as well
+  // Add row indexes that we want to remove to an array
+  int rowsToRemove[ROWS] = {0};
+  int ind = 0;
+  for (int i = 0; i < ROWS; i++) {
+    if (test2[i][colToRemove] == 1) {
+      rowsToRemove[ind] = i;
+      ind++;
+    }
+  }
+
+  // Iterate over row indexes that has to be removed
+  // remove corresponding matrix row
+  // int firstRun = 1;
+  // for (int i = 0; i < ROWS; i++) {
+  //   printf("%d\n", rowsToRemove[i]);
+  //   if (firstRun) {
+  //     delrow(test2, rowsToRemove[i]);
+  //     firstRun = 0;
+  //   } else {
+  //     if (rowsToRemove[i] != 0) {
+  //       delrow(test2, rowsToRemove[i-1]);
+  //     }
+  //   }
+  // }
+
+  // removeMatrRow(test2, 0);
+  // delrow(test2, 0);
+  removeMatrCol(test2, 1);
 
 
+  // printf("%d\n", colToRemove);
+  // int maxRoww = maxRow(test2);
+  // printf("%d\n", maxRoww);
+  // delcol(test2, 0);
 
+
+  // Print
   // int i, j;
-  // for (i = 0 ; i < 2 ; i++) { 
-  //     for (j = 0 ; j < 3 ; j++) {
+  // // i - row
+  // for (i = 0 ; i < 1 ; i++) { 
+  //   // j - col
+  //     for (j = 0 ; j < 2 ; j++) {
   //         printf("%d ", test2[i][j]);
   //     }
   //     printf("\n");
@@ -148,4 +178,16 @@ int removeMatrRow(int matr[ROWS][COLS], int rowToRemove) {
 }
 
 
-// int removeMatrCol(int matr[ROWS][COLS])
+void delrow(int a[ROWS][COLS], int row){
+    if(row < ROWS - 1)
+        memmove(&a[row], &a[row+1], (ROWS*COLS - ROWS*(row+1))*sizeof(int));
+}
+
+void removeMatrCol(int matr[ROWS][COLS], int col){
+    int r;
+    if(col < COLS - 1){
+        for(r = 0; r < ROWS; ++r){
+            memmove(&matr[r][col], &matr[r][col+1], (COLS - (col+1))*sizeof(int));
+        }
+    }
+}
