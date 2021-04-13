@@ -1,11 +1,27 @@
 <html>
   <body></body>
   <script>
-    var m = [
-      [1, 1, 0],
-      [1, 1, 1],
-      [1, 0, 1]
+
+    var test = [
+      [1, 0, 0, 1],
+      [1, 1, 1, 1],
+      [0, 1, 1, 0],
+      [1, 1, 1, 1]
     ];
+
+    var m = [
+        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+        [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0, 0, 1, 0, 1],
+        [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+        [1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+        [1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+        [1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+    ];
+
+    m = normalizeMatr(m);
 
     printMatr(m);
 
@@ -14,24 +30,42 @@
     console.log(x);
     // printMatr(x);
 
+    var currentCoverage = [];
+
     // Algo start
     // 1. Find column with min amount of 1's
-    var colToRemove = minCol(m);
+    var colToCheck = minCol(m);
 
     // 2. Choose rows, that cover the column from step 1.
-    var rowsToCheck = rowsThatCoverCol(colToRemove);
+    var rowsToCheck = rowsThatCoverCol(colToCheck);
 
     // 3. Check which row from previous step has the most coverage among the initial matrix
+    // This row also should be added to the minimal coverage
     var rowNum = rowToRemove(rowsToCheck);
+    currentCoverage.push(m[rowNum].slice(0));
 
     // 4. Find columns that cover the row from the previous step.
     // Check where this row has 1's, remove columns on these indexes
-    var cols = colsThatCoverRow(rowNum);
+    var colsToRemove = colsThatCoverRow(rowNum);
 
     // 5. Remove these columns
-    for (var i = 0; i < cols.length; i++) {
-      
+    var firstRun = true;
+    var newM;
+    var acc = 1;
+    for (var i = 0; i < colsToRemove.length; i++) {
+      if (firstRun) {
+        newM = removeCol(m, colsToRemove[i]);
+        firstRun = false;
+      } else {
+        // Matrix indexes will be shifter after first removal
+        newM = removeCol(newM, colsToRemove[i] - acc);
+        acc++;
+      }
     }
+
+    // Remove the row
+    newM = removeRow(newM, rowNum);
+    printMatr(newM);
 
     // Algo end
 
@@ -39,9 +73,8 @@
 
     function colsThatCoverRow(rowNum) {
       var cols = [];
-      m[rowNum]
       for (var i = 0; i < m[rowNum].length; i++) {
-        if (m[i]) {
+        if (m[rowNum][i]) {
           cols.push(i);
         }
       }
@@ -82,9 +115,9 @@
     };
 
     function removeRow(arr, row) {
-       arr = arr.slice(0); // make copy
-       arr.splice(row,1)
-       return arr;
+      arr = arr.slice(0); // make copy
+      arr.splice(row,1)
+      return arr;
     };
 
     function minCol(matr) {
@@ -139,6 +172,26 @@
         console.log(printText);
         printText = '';
       }
+    }
+
+    // This is just removes duplicates
+    // function normalizeMatr(matr) {
+    //   var tmp;
+    //   tmp = matr.map(JSON.stringify).reverse().filter(function (e, i, a) {
+    //       return a.indexOf(e, i+1) === -1;
+    //   }).reverse().map(JSON.parse);
+
+    //   tmp = transpose(tmp);
+
+    //   tmp = tmp.map(JSON.stringify).reverse().filter(function (e, i, a) {
+    //       return a.indexOf(e, i+1) === -1;
+    //   }).reverse().map(JSON.parse);
+
+    //   return transpose(tmp);
+    // }
+
+    function transpose(matrix) {
+      return matrix[0].map((col, i) => matrix.map(row => row[i]));
     }
   </script> 
 </html>
