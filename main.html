@@ -2,12 +2,15 @@
   <body></body>
   <script>
 
-    var test = [
-      [1, 0, 0, 1],
-      [1, 1, 1, 1],
-      [0, 1, 1, 0],
-      [1, 1, 1, 1]
-    ];
+    //
+    // var test = [
+    //   [1, 0, 0, 1],
+    //   [1, 1, 1, 1],
+    //   [0, 1, 1, 0],
+    //   [1, 1, 1, 1]
+    // ];
+
+    //
 
     var m = [
         [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
@@ -21,53 +24,96 @@
         [1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
     ];
 
-    m = normalizeMatr(m);
+    // m = normalizeMatr(m);
 
-    printMatr(m);
+    // printMatr(m);
 
-    console.log('---------');
-    var x = maxRow(m);
-    console.log(x);
-    // printMatr(x);
+    // console.log('---------');
+    // var x = maxRow(m);
+    // console.log(x);
 
-    var currentCoverage = [];
+    // var currentCoverage = [];
 
-    // Algo start
-    // 1. Find column with min amount of 1's
-    var colToCheck = minCol(m);
+    // // Algo start
+    // // 1. Find column with min amount of 1's
+    // var colToCheck = minCol(m);
 
-    // 2. Choose rows, that cover the column from step 1.
-    var rowsToCheck = rowsThatCoverCol(colToCheck);
+    // // 2. Choose rows, that cover the column from step 1.
+    // var rowsToCheck = rowsThatCoverCol(colToCheck);
 
-    // 3. Check which row from previous step has the most coverage among the initial matrix
-    // This row also should be added to the minimal coverage
-    var rowNum = rowToRemove(rowsToCheck);
-    currentCoverage.push(m[rowNum].slice(0));
+    // // 3. Check which row from previous step has the most coverage among the initial matrix
+    // // This row also should be added to the minimal coverage
+    // var rowNum = rowToRemove(rowsToCheck);
+    // // 
+    // // currentCoverage.push(m[rowNum].slice(0));
+    // // Save index instead of a row for now
+    // currentCoverage.push(rowNum);
 
-    // 4. Find columns that cover the row from the previous step.
-    // Check where this row has 1's, remove columns on these indexes
-    var colsToRemove = colsThatCoverRow(rowNum);
+    // // 4. Find columns that cover the row from the previous step.
+    // // Check where this row has 1's, remove columns on these indexes
+    // var colsToRemove = colsThatCoverRow(rowNum);
 
-    // 5. Remove these columns
-    var firstRun = true;
-    var newM;
-    var acc = 1;
-    for (var i = 0; i < colsToRemove.length; i++) {
-      if (firstRun) {
-        newM = removeCol(m, colsToRemove[i]);
-        firstRun = false;
-      } else {
-        // Matrix indexes will be shifter after first removal
-        newM = removeCol(newM, colsToRemove[i] - acc);
-        acc++;
-      }
-    }
+    // // 5. Remove these columns
+    // var firstRun = true;
+    // var newM;
+    // var acc = 1;
+    // for (var i = 0; i < colsToRemove.length; i++) {
+    //   if (firstRun) {
+    //     newM = removeCol(m, colsToRemove[i]);
+    //     firstRun = false;
+    //   } else {
+    //     // Matrix indexes will be shifter after first removal
+    //     newM = removeCol(newM, colsToRemove[i] - acc);
+    //     acc++;
+    //   }
+    // }
 
-    // Remove the row
-    newM = removeRow(newM, rowNum);
-    printMatr(newM);
+    // // Remove the row
+    // newM = removeRow(newM, rowNum);
+    // printMatr(newM);
 
     // Algo end
+
+    // Test run1
+    var currentCoverage = [];
+    while(true) {
+      // m = normalizeMatr(m);
+
+      // Algo start
+      // 1. Find column with min amount of 1's
+      var colToCheck = minCol(m);
+
+      // 2. Choose rows, that cover the column from step 1.
+      var rowsToCheck = rowsThatCoverCol(colToCheck);
+
+      // 3. Check which row from previous step has the most coverage among the initial matrix
+      // This row also should be added to the minimal coverage
+      var rowNum = rowToRemove(rowsToCheck);
+      if (!rowNum) {
+        break;
+      }
+      // 
+      // currentCoverage.push(m[rowNum].slice(0));
+      // Save index instead of a row for now
+      currentCoverage.push(rowNum);
+
+      // 4. Find columns that cover the row from the previous step.
+      // Check where this row has 1's, remove columns on these indexes
+      var colsToRemove = colsThatCoverRow(rowNum);
+
+      // 5. Remove these columns
+      var newM;
+      newM = removeMultiple(m, colsToRemove, false);
+
+      // Remove the row
+      newM = removeRow(newM, rowNum);
+      printMatr(newM);
+
+      m = newM;
+
+      // Algo end
+    }
+    // End Test run1
 
     // Helper functions
 
@@ -133,7 +179,7 @@
           colSum += matr[row][col];
         }
 
-        if (colSum <= minColSum) {
+        if (colSum < minColSum) {
           minColSum = colSum;
           colNum = col;
         }
@@ -174,8 +220,7 @@
       }
     }
 
-    // This is just removes duplicates
-    // function normalizeMatr(matr) {
+    // function removeDuplicatedRowsCols(matr) {
     //   var tmp;
     //   tmp = matr.map(JSON.stringify).reverse().filter(function (e, i, a) {
     //       return a.indexOf(e, i+1) === -1;
@@ -206,28 +251,33 @@
       // contains 1's on the same places and row A's sum is smaller than B's.
       // Same with columns.
 
-      var posOfOnesCurr;
-      var posOfOnesNext;
-      var lineCovered;
-      var rowsToDelete = [];
-      for (var i = 0; i < matr.length; i++) {
-        posOfOnesCurr = posOfOnes(matr, i);
-        for (var j = i+1; j < matr.length; j++) {
-          posOfOnesNext = posOfOnes(matr, j);
-          lineCovered = posOfOnesCurr.filter(value => posOfOnesNext.includes(value));
-          if ((lineCovered.length === posOfOnesCurr.length) || (lineCovered.length === posOfOnesNext.length)) {
-            if (posOfOnesCurr.length < posOfOnesNext.length) {
-              // delete row at "i"
-              rowsToDelete.push(i);
-            } else {
-              // delete row at "j"
-              rowsToDelete.push(j);
-            }
-          }
-        }
+      var rowsToDelete = determineRowsToDelete(matr);
+      // console.log(rowsToDelete);
+
+      if (!rowsToDelete.length) {
+        return matr;
       }
-      console.log(rowsToDelete);
-      return matr;
+
+      // Remove these rows
+      var newM = removeMultipleRows(matr, rowsToDelete);
+
+      // TODO: do not use transpose!
+      // For now we transpose the initial matrix to find
+      // the columns that can be removed
+      // But the removal itself is done for the matrix for which we also remove rows
+      newNewM = transpose(matr);
+      var rowsToDelete = determineRowsToDelete(newNewM);
+      // console.log(rowsToDelete);
+
+      if (!rowsToDelete.length) {
+        return newM;
+      }
+
+      newM = transpose(newM);
+      newM = removeMultipleRows(newM, rowsToDelete);
+      newM = transpose(newM);
+
+      return newM;
     }
 
     // this function contains indexes of 1's in a row
@@ -242,9 +292,71 @@
       return arr;
     }
 
+    function determineRowsToDelete(matr) {
+      var posOfOnesCurr;
+      var posOfOnesNext;
+      var lineCovered;
+      var rowsToDelete = [];
+      for (var i = 0; i < matr.length; i++) {
+        posOfOnesCurr = posOfOnes(matr, i);
+        for (var j = i+1; j < matr.length; j++) {
+          posOfOnesNext = posOfOnes(matr, j);
+          lineCovered = posOfOnesCurr.filter(value => posOfOnesNext.includes(value));
+          if ((lineCovered.length === posOfOnesCurr.length) || (lineCovered.length === posOfOnesNext.length)) {
+            if (posOfOnesCurr.length < posOfOnesNext.length) {
+              rowsToDelete.push(i);
+            } else {
+              rowsToDelete.push(j);
+            }
+          }
+        }
+      }
+
+      return rowsToDelete;
+    }
+
+    function removeMultipleRows(matr, rowsToDelete) {
+      var firstRun = true;
+      var newM;
+      var acc = 1;
+      for (var i = 0; i < rowsToDelete.length; i++) {
+        if (firstRun) {
+          newM = removeRow(matr, rowsToDelete[i]);
+          firstRun = false;
+        } else {
+          // Matrix indexes will be shifter after first removal
+          newM = removeRow(newM, rowsToDelete[i] - acc);
+          acc++;
+        }
+      }
+      return newM;
+    }
+
+    function removeMultiple(matr, toDelete, rows=true) {
+      var f;
+      if (rows) {
+        f = removeRow;
+      } else {
+        f = removeCol;
+      }
+      var firstRun = true;
+      var newM;
+      var acc = 1;
+      for (var i = 0; i < toDelete.length; i++) {
+        if (firstRun) {
+          newM = f(matr, toDelete[i]);
+          firstRun = false;
+        } else {
+          // Matrix indexes will be shifter after first removal
+          newM = f(newM, toDelete[i] - acc);
+          acc++;
+        }
+      }
+      return newM;
+    }
+
     function transpose(matrix) {
       return matrix[0].map((col, i) => matrix.map(row => row[i]));
     }
   </script> 
 </html>
- 
