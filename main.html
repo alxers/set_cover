@@ -12,7 +12,7 @@
 
     //
 
-    var m = [
+    var initialMatr = [
         [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
         [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
         [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
@@ -76,30 +76,30 @@
 
     // Test run1
     var currentCoverage = [];
+    m = normalizeMatr(initialMatr);
     while(true) {
-      // m = normalizeMatr(m);
-
+      m = normalizeMatr(m);
       // Algo start
       // 1. Find column with min amount of 1's
       var colToCheck = minCol(m);
 
       // 2. Choose rows, that cover the column from step 1.
-      var rowsToCheck = rowsThatCoverCol(colToCheck);
+      var rowsToCheck = rowsThatCoverCol(m, colToCheck);
 
       // 3. Check which row from previous step has the most coverage among the initial matrix
       // This row also should be added to the minimal coverage
-      var rowNum = rowToRemove(rowsToCheck);
-      if (!rowNum) {
+      var rowNum = rowToRemove(m, rowsToCheck);
+      if (rowNum < 0) {
         break;
       }
       // 
-      // currentCoverage.push(m[rowNum].slice(0));
+      currentCoverage.push(m[rowNum].slice(0));
       // Save index instead of a row for now
-      currentCoverage.push(rowNum);
+      // currentCoverage.push(rowNum);
 
       // 4. Find columns that cover the row from the previous step.
       // Check where this row has 1's, remove columns on these indexes
-      var colsToRemove = colsThatCoverRow(rowNum);
+      var colsToRemove = colsThatCoverRow(m, rowNum);
 
       // 5. Remove these columns
       var newM;
@@ -107,7 +107,9 @@
 
       // Remove the row
       newM = removeRow(newM, rowNum);
+      console.log('---------------');
       printMatr(newM);
+      console.log('---------------');
 
       m = newM;
 
@@ -117,10 +119,10 @@
 
     // Helper functions
 
-    function colsThatCoverRow(rowNum) {
+    function colsThatCoverRow(matr, rowNum) {
       var cols = [];
-      for (var i = 0; i < m[rowNum].length; i++) {
-        if (m[rowNum][i]) {
+      for (var i = 0; i < matr[rowNum].length; i++) {
+        if (matr[rowNum][i]) {
           cols.push(i);
         }
       }
@@ -128,13 +130,13 @@
       return cols;
     }
 
-    function rowToRemove(rows) {
-      var rowToRemove;
+    function rowToRemove(matr, rows) {
+      var rowToRemove = -1;
       var maxSum = 0;
       var currSum = 0;
       for (var i = 0; i < rows.length; i++) {
-        currSum = m[rows[i]].reduce((a, b) => a + b, 0);
-        if (currSum >= maxSum) {
+        currSum = matr[rows[i]].reduce((a, b) => a + b, 0);
+        if (currSum > maxSum) {
           maxSum = currSum;
           rowToRemove = rows[i];
         }
@@ -143,10 +145,10 @@
       return rowToRemove;
     }
 
-    function rowsThatCoverCol(col) {
+    function rowsThatCoverCol(matr, col) {
       var a = [];
-      for (var i = 0; i < m.length; i++) {
-        if (m[i][col]) {
+      for (var i = 0; i < matr.length; i++) {
+        if (matr[i][col]) {
           a.push(i);
         }
       }
@@ -235,16 +237,16 @@
     //   return transpose(tmp);
     // }
 
-    var test1 = [
-      [0, 1, 0, 0, 1, 0],
-      [1, 0, 0, 1, 0, 0],
-      [1, 0, 1, 0, 1, 0],
-      [0, 1, 0, 0, 1, 1],
-      [0, 1, 0, 1, 0, 0],
-      [1, 0, 1, 1, 0, 0],
-      [0, 0, 1, 0, 1, 0],
-      [0, 0, 1, 1, 0, 1]
-    ];
+    // var test1 = [
+    //   [0, 1, 0, 0, 1, 0],
+    //   [1, 0, 0, 1, 0, 0],
+    //   [1, 0, 1, 0, 1, 0],
+    //   [0, 1, 0, 0, 1, 1],
+    //   [0, 1, 0, 1, 0, 0],
+    //   [1, 0, 1, 1, 0, 0],
+    //   [0, 0, 1, 0, 1, 0],
+    //   [0, 0, 1, 1, 0, 1]
+    // ];
 
     function normalizeMatr(matr) {
       // The row A is removed if there is another row B that
@@ -259,7 +261,7 @@
       }
 
       // Remove these rows
-      var newM = removeMultipleRows(matr, rowsToDelete);
+      var newM = removeMultiple(matr, rowsToDelete);
 
       // TODO: do not use transpose!
       // For now we transpose the initial matrix to find
@@ -274,7 +276,7 @@
       }
 
       newM = transpose(newM);
-      newM = removeMultipleRows(newM, rowsToDelete);
+      newM = removeMultiple(newM, rowsToDelete);
       newM = transpose(newM);
 
       return newM;
