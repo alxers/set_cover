@@ -1,78 +1,21 @@
 <html>
   <body></body>
   <script>
-
-    //
-    // var test = [
-    //   [1, 0, 0, 1],
-    //   [1, 1, 1, 1],
-    //   [0, 1, 1, 0],
-    //   [1, 1, 1, 1]
-    // ];
-
     //
 
-    var initialMatr = [
-        [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-        [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
-        [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
-        [0, 0, 1, 1, 0, 0, 0, 1, 0, 1],
-        [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-        [1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-        [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
-        [1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-        [1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
-    ];
-
-    // m = normalizeMatr(m);
-
-    // printMatr(m);
-
-    // console.log('---------');
-    // var x = maxRow(m);
-    // console.log(x);
-
-    // var currentCoverage = [];
-
-    // // Algo start
-    // // 1. Find column with min amount of 1's
-    // var colToCheck = minCol(m);
-
-    // // 2. Choose rows, that cover the column from step 1.
-    // var rowsToCheck = rowsThatCoverCol(colToCheck);
-
-    // // 3. Check which row from previous step has the most coverage among the initial matrix
-    // // This row also should be added to the minimal coverage
-    // var rowNum = rowToRemove(rowsToCheck);
-    // // 
-    // // currentCoverage.push(m[rowNum].slice(0));
-    // // Save index instead of a row for now
-    // currentCoverage.push(rowNum);
-
-    // // 4. Find columns that cover the row from the previous step.
-    // // Check where this row has 1's, remove columns on these indexes
-    // var colsToRemove = colsThatCoverRow(rowNum);
-
-    // // 5. Remove these columns
-    // var firstRun = true;
-    // var newM;
-    // var acc = 1;
-    // for (var i = 0; i < colsToRemove.length; i++) {
-    //   if (firstRun) {
-    //     newM = removeCol(m, colsToRemove[i]);
-    //     firstRun = false;
-    //   } else {
-    //     // Matrix indexes will be shifter after first removal
-    //     newM = removeCol(newM, colsToRemove[i] - acc);
-    //     acc++;
-    //   }
-    // }
-
-    // // Remove the row
-    // newM = removeRow(newM, rowNum);
-    // printMatr(newM);
-
-    // Algo end
+    // We need to preserv initial matrix indexes
+    // so it should be an object
+    var initialMatr = {
+        0: [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        1: [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+        2: [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+        3: [0, 0, 1, 1, 0, 0, 0, 1, 0, 1],
+        4: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+        5: [1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        6: [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+        7: [1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+        8: [1, 0, 1, 0, 1, 0, 1, 0, 0, 1]
+    };
 
     // Test run1
     var currentCoverage = [];
@@ -93,9 +36,9 @@
         break;
       }
       // 
-      currentCoverage.push(m[rowNum].slice(0));
+      // currentCoverage.push(m[rowNum].slice(0));
       // Save index instead of a row for now
-      // currentCoverage.push(rowNum);
+      currentCoverage.push(rowNum);
 
       // 4. Find columns that cover the row from the previous step.
       // Check where this row has 1's, remove columns on these indexes
@@ -147,8 +90,9 @@
 
     function rowsThatCoverCol(matr, col) {
       var a = [];
-      for (var i = 0; i < matr.length; i++) {
-        if (matr[i][col]) {
+      for (var i = 0; i < Object.keys(matr).length; i++) {
+        // if (matr[i][col]) {
+        if(matr.hasOwnProperty(i) && matr[i] && matr[i][col]) {
           a.push(i);
         }
       }
@@ -157,28 +101,38 @@
     }
 
     function removeCol(array, remIdx) {
-      return array.map(function(arr) {
+      return Object.values(array).map(function(arr) {
         return arr.filter(function(el,idx){return idx !== remIdx});  
       });
     };
 
-    function removeRow(arr, row) {
-      arr = arr.slice(0); // make copy
-      arr.splice(row,1)
-      return arr;
+    function removeRow(matr, row) {
+      // Old code, works with array
+      // arr = arr.slice(0); // make copy
+      // arr.splice(row,1)
+      // return arr;
+
+      // New, works with object
+      // Deep copy
+      matrCopy = JSON.parse(JSON.stringify(matr));
+      delete(matrCopy[row]);
+      return matrCopy;
     };
 
     function minCol(matr) {
       // Find colum with min amout of 1s
       // minSum has to be something other than 0
       // in the beginning
-      var minColSum = matr.length;
+      var minColSum = Object.keys(matr).length;
       var colSum;
       var colNum;
-      for (var col = 0; col < matr[0].length; col++) {
+      var rowLength = Object.values(initialMatr)[0].length;
+      for (var col = 0; col < rowLength; col++) {
         colSum = 0;
-        for (var row = 0; row < matr.length; row++) {
-          colSum += matr[row][col];
+        for (var row = 0; row < Object.keys(matr).length; row++) {
+          if (matr.hasOwnProperty(row) && matr[row]) {
+            colSum += matr[row][col];
+          }
         }
 
         if (colSum < minColSum) {
@@ -195,10 +149,12 @@
       var maxRowSum = 0;
       var currRowSum = 0;
       var rowNum = 0;
-      for (var i = 0; i < matr.length; i++) {
+      for (var i = 0; i < Object.keys(matr).length; i++) {
         currRowSum = 0;
         for (var j = 0; j < matr[0].length; j++) {
-          currRowSum += matr[i][j];
+          if (matr.hasOwnProperty(i)) {
+            currRowSum += matr[i][j];
+          }
 
           if (currRowSum > maxRowSum) {
             rowNum = i;
@@ -213,7 +169,7 @@
     function printMatr(matr) {
       var printText = '';
 
-      for (var i = 0; i < matr.length; i++) {
+      for (var i = 0; i < Object.keys(matr); i++) {
         for (var j = 0; j < matr[0].length; j++) {
           printText += matr[i][j] + ' ';
         }
@@ -285,6 +241,9 @@
     // this function contains indexes of 1's in a row
     function posOfOnes(matr, row) {
       var arr = [];
+      if (!matr[row]) {
+        return arr;
+      }
       for (var i = 0; i < matr[row].length; i++) {
         if (matr[row][i]) {
           arr.push(i);
@@ -299,9 +258,9 @@
       var posOfOnesNext;
       var lineCovered;
       var rowsToDelete = [];
-      for (var i = 0; i < matr.length; i++) {
+      for (var i = 0; i < Object.keys(matr).length; i++) {
         posOfOnesCurr = posOfOnes(matr, i);
-        for (var j = i+1; j < matr.length; j++) {
+        for (var j = i+1; j < Object.keys(matr).length; j++) {
           posOfOnesNext = posOfOnes(matr, j);
           lineCovered = posOfOnesCurr.filter(value => posOfOnesNext.includes(value));
           if ((lineCovered.length === posOfOnesCurr.length) || (lineCovered.length === posOfOnesNext.length)) {
@@ -357,8 +316,20 @@
       return newM;
     }
 
-    function transpose(matrix) {
-      return matrix[0].map((col, i) => matrix.map(row => row[i]));
+    function transpose(matr) {
+      // return matrix[0].map((col, i) => matrix.map(row => row[i]));
+      var newM = {};
+      Object.values(matr).map(function (col, i) {
+        Object.values(matr).map(function (row) {
+          if (row) {
+            if (!newM[i]) {
+              newM[i] = [];
+            }
+            newM[i].push(row[i]);
+          }
+        })
+      })
+      return newM;
     }
   </script> 
 </html>
