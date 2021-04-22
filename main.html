@@ -19,9 +19,9 @@
 
     // Test run1
     var currentCoverage = [];
-    m = normalizeMatr(initialMatr);
+    // m = normalizeMatr(initialMatr);
+    m = initialMatr;
     while(true) {
-      m = normalizeMatr(m);
       // Algo start
       // 1. Find column with min amount of 1's
       var colToCheck = minCol(m);
@@ -46,7 +46,7 @@
 
       // 5. Remove these columns
       var newM;
-      newM = removeMultiple(m, colsToRemove, false);
+      newM = removeMultipleCols(m, colsToRemove);
 
       // Remove the row
       newM = removeRow(newM, rowNum);
@@ -55,12 +55,12 @@
       console.log('---------------');
 
       m = newM;
-
       // Algo end
     }
     // End Test run1
 
     // Helper functions
+
 
     function colsThatCoverRow(matr, rowNum) {
       var cols = [];
@@ -90,20 +90,38 @@
 
     function rowsThatCoverCol(matr, col) {
       var a = [];
-      for (var i = 0; i < Object.keys(matr).length; i++) {
-        // if (matr[i][col]) {
-        if(matr.hasOwnProperty(i) && matr[i] && matr[i][col]) {
-          a.push(i);
+      // for (var i = 0; i < Object.keys(matr).length; i++) {
+      //   // if (matr[i][col]) {
+      //   if(matr.hasOwnProperty(i) && matr[i] && matr[i][col]) {
+      //     a.push(i);
+      //   }
+      // }
+
+      var indexes = Object.keys(matr);
+      var currRow;
+      for (var i = 0; i < indexes.length; i++) {
+        currRow = indexes[i];
+        if (matr[currRow][col]) {
+          a.push(currRow);
         }
       }
 
       return a;
     }
 
-    function removeCol(array, remIdx) {
-      return Object.values(array).map(function(arr) {
-        return arr.filter(function(el,idx){return idx !== remIdx});  
-      });
+    function removeCol(matr, remIdx) {
+      // return Object.values(array).map(function(arr) {
+      //   return arr.filter(function(el,idx){return idx !== remIdx});  
+      // });
+
+      var indexes = Object.keys(matr);
+      var currRow;
+      for (var i = 0; i < indexes.length; i++) {
+        currRow = indexes[i];
+        matr[currRow].splice(remIdx, 1);
+      }
+
+      return matr;
     };
 
     function removeRow(matr, row) {
@@ -114,9 +132,12 @@
 
       // New, works with object
       // Deep copy
-      matrCopy = JSON.parse(JSON.stringify(matr));
-      delete(matrCopy[row]);
-      return matrCopy;
+      // matrCopy = JSON.parse(JSON.stringify(matr));
+      // delete(matrCopy[row]);
+      // return matrCopy;
+
+      delete(matr[row]);
+      return matr;
     };
 
     function minCol(matr) {
@@ -127,12 +148,13 @@
       var colSum;
       var colNum;
       var rowLength = Object.values(initialMatr)[0].length;
+      var indexes = Object.keys(matr);
       for (var col = 0; col < rowLength; col++) {
         colSum = 0;
-        for (var row = 0; row < Object.keys(matr).length; row++) {
-          if (matr.hasOwnProperty(row) && matr[row]) {
-            colSum += matr[row][col];
-          }
+        for (var row = 0; row < indexes.length; row++) {
+          // if (matr.hasOwnProperty(row) && matr[row]) {
+            colSum += matr[indexes[row]][col];
+          // }
         }
 
         if (colSum < minColSum) {
@@ -209,33 +231,46 @@
       // contains 1's on the same places and row A's sum is smaller than B's.
       // Same with columns.
 
-      var rowsToDelete = determineRowsToDelete(matr);
-      // console.log(rowsToDelete);
+      var colsToDelete = determineColsToDelete(matr);
 
-      if (!rowsToDelete.length) {
+      if (!colsToDelete.length) {
         return matr;
       }
 
-      // Remove these rows
-      var newM = removeMultiple(matr, rowsToDelete);
+      // Remove these cols
+      var matrWithColsDeleted = removeMultipleCols(matr, colsToDelete);
 
+
+      var rowsToDelete = determineRowsToDelete(matrWithColsDeleted);
+      // console.log(rowsToDelete);
+
+      if (!rowsToDelete.length) {
+        return matrWithColsDeleted;
+      }
+
+      // Remove these rows
+      var matrWithRowsAndColsRemoved = removeMultipleRows(matrWithColsDeleted, rowsToDelete);
+
+      return matrWithRowsAndColsRemoved;
+
+      // Doesn't work, transpose for non square matrices
       // TODO: do not use transpose!
       // For now we transpose the initial matrix to find
       // the columns that can be removed
       // But the removal itself is done for the matrix for which we also remove rows
-      newNewM = transpose(matr);
-      var rowsToDelete = determineRowsToDelete(newNewM);
-      // console.log(rowsToDelete);
+      // newNewM = transpose(matr);
+      // var rowsToDelete = determineRowsToDelete(newNewM);
+      // // console.log(rowsToDelete);
 
-      if (!rowsToDelete.length) {
-        return newM;
-      }
+      // if (!rowsToDelete.length) {
+      //   return newM;
+      // }
 
-      newM = transpose(newM);
-      newM = removeMultiple(newM, rowsToDelete);
-      newM = transpose(newM);
+      // newM = transpose(newM);
+      // newM = removeMultiple(newM, rowsToDelete);
+      // newM = transpose(newM);
 
-      return newM;
+      // return newM;
     }
 
     // this function contains indexes of 1's in a row
@@ -258,78 +293,177 @@
       var posOfOnesNext;
       var lineCovered;
       var rowsToDelete = [];
+      var rowKeys = Object.keys(matr);
       for (var i = 0; i < Object.keys(matr).length; i++) {
-        posOfOnesCurr = posOfOnes(matr, i);
+        posOfOnesCurr = posOfOnes(matr, rowKeys[i]);
         for (var j = i+1; j < Object.keys(matr).length; j++) {
-          posOfOnesNext = posOfOnes(matr, j);
+          posOfOnesNext = posOfOnes(matr, rowKeys[j]);
           lineCovered = posOfOnesCurr.filter(value => posOfOnesNext.includes(value));
           if ((lineCovered.length === posOfOnesCurr.length) || (lineCovered.length === posOfOnesNext.length)) {
             if (posOfOnesCurr.length < posOfOnesNext.length) {
-              rowsToDelete.push(i);
+              rowsToDelete.push(rowKeys[i]);
             } else {
-              rowsToDelete.push(j);
+              rowsToDelete.push(rowKeys[j]);
             }
           }
         }
       }
 
-      return rowsToDelete;
+      // return rowsToDelete;
+      return [...new Set(rowsToDelete)];
     }
 
-    function removeMultipleRows(matr, rowsToDelete) {
-      var firstRun = true;
-      var newM;
-      var acc = 1;
-      for (var i = 0; i < rowsToDelete.length; i++) {
-        if (firstRun) {
-          newM = removeRow(matr, rowsToDelete[i]);
-          firstRun = false;
-        } else {
-          // Matrix indexes will be shifter after first removal
-          newM = removeRow(newM, rowsToDelete[i] - acc);
-          acc++;
+    // aa = {0: [1,2,3], 1:[4,5,6]};
+    // bb = {0: [1,2], 1:[3,4], 2:[5,6]};
+    // determineColsToDelete(aa)
+    // determineColsToDelete(bb)
+
+    function determineColsToDelete(matr) {
+      var posOfOnesCurr;
+      var posOfOnesNext;
+      var lineCovered;
+      var colsToDelete = [];
+      var numberOfCols = Object.values(matr)[0].length;
+      var numberOfRows = Object.keys(matr).length;
+      for (var i = 0; i < numberOfCols; i++) {
+        posOfOnesCurr = posOfOnesCol(matr, i);
+        for (var j = i+1; j < numberOfCols; j++) {
+          posOfOnesNext = posOfOnesCol(matr, j);
+          lineCovered = posOfOnesCurr.filter(value => posOfOnesNext.includes(value));
+          if ((lineCovered.length === posOfOnesCurr.length) || (lineCovered.length === posOfOnesNext.length)) {
+            if (posOfOnesCurr.length < posOfOnesNext.length) {
+              colsToDelete.push(i);
+            } else {
+              colsToDelete.push(j);
+            }
+          }
         }
+      }
+
+      // return colsToDelete;
+      return [...new Set(colsToDelete)];
+    }
+
+    function posOfOnesCol(matr, col) {
+      var numberOfRows = Object.keys(matr).length;
+      var rowNames = Object.keys(matr);
+      var indexes = [];
+      for (var i = 0; i < numberOfRows; i++) {
+        var curr = rowNames[i];
+        if (matr[curr][col]) {
+          indexes.push(curr);
+        }
+      }
+
+      return indexes;
+    }
+
+    // function determineColsToDelete(matr) {
+    //   var posOfOnesCurr;
+    //   var posOfOnesNext;
+    //   var lineCovered;
+    //   var colsToDelete = [];
+    //   var numberOfCols = Object.values(matr)[0].length;
+    //   var numberOfRows = Object.keys(matr).length;
+    //   var row;
+    //   var col;
+
+    //   if (numberOfCols > numberOfRows) {
+    //     row = numberOfRows;
+    //     col = numberOfCols;
+    //   } else {
+    //     row = numberOfCols;
+    //     col = numberOfRows;
+    //   }
+
+    //   for (var i = 0; i < row; i++) {
+    //     for (var j = 0; j < col; j++) {
+    //       if (matr[j]) {
+    //         console.log(matr[j][i]);
+    //       }
+    //     }
+    //   }
+    // }
+
+    // function removeMultipleRows(matr, rowsToDelete) {
+    //   var firstRun = true;
+    //   var newM;
+    //   var acc = 1;
+    //   for (var i = 0; i < rowsToDelete.length; i++) {
+    //     if (firstRun) {
+    //       newM = removeRow(matr, rowsToDelete[i]);
+    //       firstRun = false;
+    //     } else {
+    //       // Matrix indexes will be shifter after first removal
+    //       newM = removeRow(newM, rowsToDelete[i] - acc);
+    //       acc++;
+    //     }
+    //   }
+    //   return newM;
+    // }
+
+    function removeMultipleRows(matr, rowsToDelete) {
+      var newM = matr;
+      for (var i = 0; i < rowsToDelete.length; i++) {
+        newM = removeRow(newM, rowsToDelete[i]);
       }
       return newM;
     }
 
-    function removeMultiple(matr, toDelete, rows=true) {
-      var f;
-      if (rows) {
-        f = removeRow;
-      } else {
-        f = removeCol;
-      }
+    function removeMultipleCols(matr, toDelete) {
       var firstRun = true;
-      var newM;
+      var newM = matr;
       var acc = 1;
       for (var i = 0; i < toDelete.length; i++) {
         if (firstRun) {
-          newM = f(matr, toDelete[i]);
+          newM = removeCol(newM, toDelete[i]);
           firstRun = false;
         } else {
           // Matrix indexes will be shifter after first removal
-          newM = f(newM, toDelete[i] - acc);
+          newM = removeCol(newM, toDelete[i] - acc);
           acc++;
         }
       }
       return newM;
     }
 
-    function transpose(matr) {
-      // return matrix[0].map((col, i) => matrix.map(row => row[i]));
-      var newM = {};
-      Object.values(matr).map(function (col, i) {
-        Object.values(matr).map(function (row) {
-          if (row) {
-            if (!newM[i]) {
-              newM[i] = [];
-            }
-            newM[i].push(row[i]);
-          }
-        })
-      })
-      return newM;
-    }
+    // function removeMultiple(matr, toDelete, rows=true) {
+    //   var f;
+    //   if (rows) {
+    //     f = removeRow;
+    //   } else {
+    //     f = removeCol;
+    //   }
+      // var firstRun = true;
+      // var newM;
+      // var acc = 1;
+      // for (var i = 0; i < toDelete.length; i++) {
+      //   if (firstRun) {
+      //     newM = f(matr, toDelete[i]);
+      //     firstRun = false;
+      //   } else {
+      //     // Matrix indexes will be shifter after first removal
+      //     newM = f(newM, toDelete[i] - acc);
+      //     acc++;
+      //   }
+      // }
+      // return newM;
+    // }
+
+    // function transpose(matr) {
+    //   // return matrix[0].map((col, i) => matrix.map(row => row[i]));
+    //   var newM = {};
+    //   Object.values(matr).map(function (col, i) {
+    //     Object.values(matr).map(function (row) {
+    //       if (row) {
+    //         if (!newM[i]) {
+    //           newM[i] = [];
+    //         }
+    //         newM[i].push(row[i]);
+    //       }
+    //     })
+    //   })
+    //   return newM;
+    // }
   </script> 
 </html>
