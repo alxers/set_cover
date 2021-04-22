@@ -5,58 +5,142 @@
 
     // We need to preserv initial matrix indexes
     // so it should be an object
+    // var initialMatr = {
+    //     0: [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+    //     1: [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+    //     2: [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+    //     3: [0, 0, 1, 1, 0, 0, 0, 1, 0, 1],
+    //     4: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+    //     5: [1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+    //     6: [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+    //     7: [1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+    //     8: [1, 0, 1, 0, 1, 0, 1, 0, 0, 1]
+    // };
+
+    var test = {
+        1: [0, 1, 1, 0],
+        2: [0, 0, 1, 1],
+        3: [1, 0, 0, 1],
+        4: [1, 1, 0, 0]
+    };
+
     var initialMatr = {
-        0: [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-        1: [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
-        2: [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
-        3: [0, 0, 1, 1, 0, 0, 0, 1, 0, 1],
-        4: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
-        5: [1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
-        6: [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
-        7: [1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-        8: [1, 0, 1, 0, 1, 0, 1, 0, 0, 1]
+        1: [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        2: [0, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+        3: [0, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+        4: [0, 0, 1, 1, 0, 0, 0, 1, 0, 1],
+        5: [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+        6: [1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        7: [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+        8: [1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+        9: [1, 0, 1, 0, 1, 0, 1, 0, 0, 1]
     };
 
     // Test run1
     var currentCoverage = [];
     // m = normalizeMatr(initialMatr);
-    m = initialMatr;
-    while(true) {
-      // Algo start
-      // 1. Find column with min amount of 1's
-      var colToCheck = minCol(m);
+    // m = initialMatr;
 
-      // 2. Choose rows, that cover the column from step 1.
-      var rowsToCheck = rowsThatCoverCol(m, colToCheck);
-
-      // 3. Check which row from previous step has the most coverage among the initial matrix
-      // This row also should be added to the minimal coverage
-      var rowNum = rowToRemove(m, rowsToCheck);
-      if (rowNum < 0) {
-        break;
-      }
-      // 
-      // currentCoverage.push(m[rowNum].slice(0));
-      // Save index instead of a row for now
-      currentCoverage.push(rowNum);
-
-      // 4. Find columns that cover the row from the previous step.
-      // Check where this row has 1's, remove columns on these indexes
-      var colsToRemove = colsThatCoverRow(m, rowNum);
-
-      // 5. Remove these columns
-      var newM;
-      newM = removeMultipleCols(m, colsToRemove);
-
-      // Remove the row
-      newM = removeRow(newM, rowNum);
-      console.log('---------------');
-      printMatr(newM);
-      console.log('---------------');
-
-      m = newM;
       // Algo end
+    var minCovLength;
+    var minCovs = [];
+
+    addCoverage(test, []);
+
+    console.log(minCovs, minCovLength);
+
+    
+
+
+    function addCoverage(matr, coverage) {
+      var columnsToCheck = minCol(matr);
+      if (columnsToCheck.length === 0) {
+        // console.log("BY COL", coverage);
+        if (!minCovLength || (coverage.length < minCovLength)) {
+          minCovs = [coverage];
+          minCovLength = coverage.length;
+        } else if (minCovLength && coverage.length == minCovLength) {
+          minCovs.push(coverage);
+        }
+      }
+      for (var i = 0; i < columnsToCheck.length; i++) {
+        var rowsToCheck = rowsThatCoverCol(matr, columnsToCheck[i]);
+
+        for (var j = 0; j < rowsToCheck.length; j++) {
+          // console.log("ROW", rowsToCheck[j]);
+          var colsToRemove = colsThatCoverRow(matr, rowsToCheck[j]);
+          // 5. Remove these columns
+          var newM;
+          newM = removeMultipleCols(matr, colsToRemove);
+
+          // Remove the row
+          newM = removeRow(newM, rowsToCheck[j]);
+          var newCoverage = coverage.slice(0);
+          newCoverage.push(rowsToCheck[j]);
+          // console.log(`COL ${columnsToCheck[i]} |`, `ROW ${rowsToCheck[j]} |`, `COV ${newCoverage}`);
+          addCoverage(copyMatr(newM), newCoverage.slice(0));
+        }
+      }
     }
+
+    function copyMatr(matr) {
+      var newMatr = {};
+
+      for (var key in matr) {
+        newMatr[key] = matr[key].slice(0);
+      }
+
+      return newMatr;
+    }
+
+    // function addCoverage11(matr, currentCoverage, col, row) {
+    //   // currentCoverage.push(m[rowNum].slice(0));
+    //   // Save index instead of a row for now
+    //   currentCoverage.push(row);
+
+    //   // 4. Find columns that cover the row from the previous step.
+    //   // Check where this row has 1's, remove columns on these indexes
+    //   var colsToRemove = colsThatCoverRow(matr, row);
+
+    //   // 5. Remove these columns
+    //   var newM;
+    //   newM = removeMultipleCols(matr, colsToRemove);
+
+    //   // Remove the row
+    //   newM = removeRow(newM, row);
+    //   console.log('---------------');
+    //   printMatr(newM);
+    //   console.log('---------------');
+
+    //   matr = newM;
+
+    //   var columnsToCheck = minCol(matr);
+
+    //   var colToCheck;
+    //   var minCoverage = currentCoverage;
+    //   var newCoverage = [];
+
+    //   for (var i = 0; i < columnsToCheck.length; i++) {
+    //     colToCheck = columnsToCheck[i];
+    //     // 2. Choose rows, that cover the column from step 1.
+    //     var rowsToCheck = rowsThatCoverCol(matr, colToCheck);
+
+    //     // 3. Check which row from previous step has the most coverage among the initial matrix
+    //     // This row also should be added to the minimal coverage
+    //     var rowsNum = rowToRemove(matr, rowsToCheck);
+
+    //     for (var j = 0; j < rowsNum.length; j++) {
+    //       // Object.assign({}, m), currentCoverage.slice(0)
+    //       newCoverage = addCoverage(Object.assign({}, matr), currentCoverage.slice(0), colToCheck, rowsNum[j]);
+    //       console.log(newCoverage, col, row);
+    //       if ((newCoverage.length < minCoverage.length) || minCoverage.length == 0) {
+    //         minCoverage = newCoverage;
+    //       }
+    //     }
+    //   }
+
+    //   return minCoverage;
+    // }
     // End Test run1
 
     // Helper functions
@@ -77,15 +161,19 @@
       var rowToRemove = -1;
       var maxSum = 0;
       var currSum = 0;
+      var rowsToRemove = [];
       for (var i = 0; i < rows.length; i++) {
         currSum = matr[rows[i]].reduce((a, b) => a + b, 0);
         if (currSum > maxSum) {
           maxSum = currSum;
           rowToRemove = rows[i];
+          rowsToRemove = [rows[i]];
+        } else if (currSum == maxSum) {
+          rowsToRemove.push(rows[i]);
         }
       }
 
-      return rowToRemove;
+      return rowsToRemove;
     }
 
     function rowsThatCoverCol(matr, col) {
@@ -113,15 +201,15 @@
       // return Object.values(array).map(function(arr) {
       //   return arr.filter(function(el,idx){return idx !== remIdx});  
       // });
-
+      var newM = copyMatr(matr);
       var indexes = Object.keys(matr);
       var currRow;
       for (var i = 0; i < indexes.length; i++) {
         currRow = indexes[i];
-        matr[currRow].splice(remIdx, 1);
+        newM[currRow].splice(remIdx, 1);
       }
 
-      return matr;
+      return newM;
     };
 
     function removeRow(matr, row) {
@@ -135,9 +223,9 @@
       // matrCopy = JSON.parse(JSON.stringify(matr));
       // delete(matrCopy[row]);
       // return matrCopy;
-
-      delete(matr[row]);
-      return matr;
+      var newM = copyMatr(matr);
+      delete(newM[row]);
+      return newM;
     };
 
     function minCol(matr) {
@@ -149,6 +237,8 @@
       var colNum;
       var rowLength = Object.values(initialMatr)[0].length;
       var indexes = Object.keys(matr);
+
+      var columnsWithMinSum = [];
       for (var col = 0; col < rowLength; col++) {
         colSum = 0;
         for (var row = 0; row < indexes.length; row++) {
@@ -158,12 +248,15 @@
         }
 
         if (colSum < minColSum) {
+          columnsWithMinSum = [col];
           minColSum = colSum;
           colNum = col;
+        } else if (colSum == minColSum) {
+          columnsWithMinSum.push(col);
         }
       }
 
-      return colNum;
+      return columnsWithMinSum;
     }
 
     function maxRow(matr) {
@@ -412,7 +505,7 @@
 
     function removeMultipleCols(matr, toDelete) {
       var firstRun = true;
-      var newM = matr;
+      var newM = copyMatr(matr);
       var acc = 1;
       for (var i = 0; i < toDelete.length; i++) {
         if (firstRun) {
