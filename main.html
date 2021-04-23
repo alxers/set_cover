@@ -47,9 +47,7 @@
 
     addCoverage(test, []);
 
-    console.log(minCovs, minCovLength);
-
-    
+    console.log(minCovs.sort(function(a, b) { return parseInt(a) - parseInt(b) }), minCovLength);
 
 
     function addCoverage(matr, coverage) {
@@ -77,7 +75,6 @@
           newM = removeRow(newM, rowsToCheck[j]);
           var newCoverage = coverage.slice(0);
           newCoverage.push(rowsToCheck[j]);
-          // console.log(`COL ${columnsToCheck[i]} |`, `ROW ${rowsToCheck[j]} |`, `COV ${newCoverage}`);
           addCoverage(copyMatr(newM), newCoverage.slice(0));
         }
       }
